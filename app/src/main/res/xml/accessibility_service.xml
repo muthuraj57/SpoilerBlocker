@@ -4,4 +4,5 @@
     android:accessibilityFlags="flagReportViewIds"
     android:canRetrieveWindowContent="true"
     android:notificationTimeout="100"
+    android:packageNames="reddit.news"
     android:settingsActivity="com.example.android.apis.accessibility.TestBackActivity" />

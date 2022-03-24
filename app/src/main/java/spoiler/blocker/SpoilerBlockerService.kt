@@ -9,6 +9,11 @@ import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import androidx.core.content.getSystemService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import spoiler.blocker.util.children
 import spoiler.blocker.util.log
 import spoiler.blocker.util.logE
@@ -21,13 +26,22 @@ import spoiler.blocker.util.makeGone
  */
 class SpoilerBlockerService : AccessibilityService() {
 
+    private var scope = CoroutineScope(SupervisorJob())
+
     override fun onCreate() {
         logE { "onCreate() called" }
+        scope.cancel()
+        scope = CoroutineScope(SupervisorJob())
+        keywordsDataStore.data
+            .onEach {
+                blockList = it.keywords
+            }.launchIn(scope)
         super.onCreate()
     }
 
     override fun onDestroy() {
         logE { "onDestroy() called" }
+        scope.cancel()
         super.onDestroy()
     }
 
@@ -158,16 +172,7 @@ class SpoilerBlockerService : AccessibilityService() {
     }
 
     companion object {
-        private val blockList =
-            listOf(
-                "strange",
-                "doctor strange",
-                "dr strange",
-                "madness",
-                "multiverse",
-                "moon knight",
-                "Love and Thunder"
-            )
+        private var blockList = emptyList<String>()
 
         private fun AccessibilityNodeInfo.getBlockedTextIfFound(): String? {
             val text = text ?: return null

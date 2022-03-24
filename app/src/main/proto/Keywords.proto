@@ -1,0 +1,6 @@
+syntax = "proto3";
+option java_package = "spoiler.blocker";
+
+message Keywords{
+  repeated string keywords = 1;
+}

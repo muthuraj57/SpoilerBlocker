@@ -10,6 +10,8 @@ import android.graphics.Path
 import android.graphics.Rect
 import android.view.View
 import androidx.core.graphics.toRectF
+import spoiler.blocker.util.log
+import spoiler.blocker.util.logE
 import spoiler.blocker.util.makeGone
 import spoiler.blocker.util.makeVisible
 import java.util.*
@@ -25,6 +27,7 @@ class OverlayView(context: Context) : View(context) {
     private val textDataList = mutableListOf<TextData>()
 
     fun addRect(rect: Rect, text: String?) {
+        logE { "addRect() called with: rect = [$rect], text = [$text]" }
         makeVisible()
         path.addRect(rect.toRectF(), Path.Direction.CW)
         if (text != null) {
@@ -49,9 +52,11 @@ class OverlayView(context: Context) : View(context) {
     }
 
     fun clearAllRect() {
+        logE { "clearAllRect() called" }
         path.reset()
         textDataList.clear()
         makeGone()
+        invalidate()
     }
 
     private val paint by lazy {

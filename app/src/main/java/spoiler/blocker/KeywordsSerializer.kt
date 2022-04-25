@@ -11,8 +11,6 @@ import java.io.OutputStream
 
 /**
  * Created by Muthuraj on 25/03/22.
- *
- * Jambav, Zoho Corporation
  */
 class KeywordsSerializer : Serializer<Keywords> {
     override val defaultValue = Keywords()

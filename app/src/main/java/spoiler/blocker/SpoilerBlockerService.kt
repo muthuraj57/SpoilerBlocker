@@ -3,8 +3,6 @@ package spoiler.blocker
 
 import android.accessibilityservice.AccessibilityService
 import android.graphics.PixelFormat
-import android.graphics.Rect
-import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
@@ -14,7 +12,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import spoiler.blocker.util.children
 import spoiler.blocker.util.log
 import spoiler.blocker.util.logE
 import spoiler.blocker.util.logI
@@ -66,6 +63,9 @@ class SpoilerBlockerService : AccessibilityService() {
         view
     }
 
+    private val redditBlocker by lazy { RedditBlocker(windowManager, overlayView) }
+    private val youTubeBlocker by lazy { YouTubeBlocker(windowManager, overlayView) }
+
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         logI { "onAccessibilityEvent() called with: event = [$event]" }
         if (event.className == "android.widget.ProgressBar") {
@@ -87,64 +87,12 @@ class SpoilerBlockerService : AccessibilityService() {
 
         if ("reddit.news" in event.packageName) {
             //Reddit app.
-            checkForReddit(rootInActiveWindow)
+            redditBlocker.checkAndBlock(rootInActiveWindow)
             return
         }
-    }
-
-    private fun checkForReddit(nodeInfo: AccessibilityNodeInfo?) {
-        nodeInfo ?: return
-
-        val dy =
-            windowManager.currentWindowMetrics.windowInsets.getInsets(WindowInsets.Type.statusBars()).top
-        val rect = Rect()
-        var blockedText: String? = null
-        nodeInfo.children.forEachIndexed { index, childNode ->
-            log { "child id: ${childNode.viewIdResourceName}, text: ${childNode.text}" }
-            when (childNode.viewIdResourceName) {
-                "reddit.news:id/title" -> {
-                    if (blockedText == null) {
-                        blockedText = childNode.getBlockedTextIfFound()
-                    }
-                    if (blockedText != null) {
-                        logE { "Blocking title with text: \"${childNode.text}\" at index: $index" }
-
-                        childNode.getBoundsInScreen(rect)
-                        rect.offset(0, -dy)
-                        overlayView.addRect(rect, blockedText)
-                    } else {
-                        log { "Found title with text: \"${childNode.text}\" at index: $index" }
-                    }
-
-                    nodeInfo.children.forEachIndexed { childIndex, sibling ->
-                        if (blockedText != null) {
-                            if (childIndex > index && sibling.viewIdResourceName == "reddit.news:id/imagePreview") {
-                                sibling.getBoundsInScreen(rect)
-                                logE { "Found imagePreview with text: \"${sibling.text}\" at index: $index for text: \"${childNode.text}\", rect: $rect" }
-                                rect.offset(0, -dy)
-                                overlayView.addRect(rect, blockedText)
-                                logE { "adding overlay view width: ${rect.width()}, height: ${rect.height()}" }
-                            }
-                        }
-                    }
-                }
-                "reddit.news:id/selftext", "reddit.news:id/imagePreview", "reddit.news:id/video", "reddit.news:id/linkFlair" -> {
-                    if (blockedText == null) {
-                        blockedText = childNode.getBlockedTextIfFound()
-                    }
-                    if (blockedText != null) {
-                        logE { "Blocking title with self text: \"${childNode.text}\" at index: $index" }
-                        childNode.getBoundsInScreen(rect)
-                        rect.offset(0, -dy)
-                        overlayView.addRect(rect, blockedText)
-                    } else {
-                        log { "Found title with self text: \"${childNode.text}\" at index: $index" }
-                    }
-                }
-                else -> {
-                    checkForReddit(childNode)
-                }
-            }
+        if ("com.google.android.youtube" in event.packageName) {
+            youTubeBlocker.checkAndBlock(rootInActiveWindow)
+            return
         }
     }
 
@@ -154,6 +102,9 @@ class SpoilerBlockerService : AccessibilityService() {
         var log = ""
         for (i in 0 until mDebugDepth) {
             log += "."
+        }
+        if (mNodeInfo.text?.toString()?.startsWith("father passed away in") == true) {
+            logE { "found subtitle.." }
         }
         log += "(" + mNodeInfo.text + " <-- " +
                 mNodeInfo.viewIdResourceName + ")"
@@ -168,19 +119,24 @@ class SpoilerBlockerService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
-        log { "onInterrupt() called" }
+        logE { "onInterrupt() called" }
     }
 
     companion object {
         private var blockList = emptyList<String>()
 
-        private fun AccessibilityNodeInfo.getBlockedTextIfFound(): String? {
-            val text = text ?: return null
+        fun AccessibilityNodeInfo.getBlockedTextIfFound(checkForContentDesc: Boolean = false): String? {
+            val text =
+                if (checkForContentDesc) contentDescription ?: return null
+                else text ?: return null
             val result = blockList.find { text.contains(it, ignoreCase = true) }
             if (result != null) {
                 logE { "shouldBlock() called true $text" }
             } else {
-                log { "shouldBlock() called false" }
+                log { "shouldBlock() called false $text" }
+                if (checkForContentDesc.not()) {
+                    return getBlockedTextIfFound(checkForContentDesc = true)
+                }
             }
             return result
 //            return blockList.any { it in text }

@@ -12,9 +12,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import spoiler.blocker.apps.RedditBlocker
-import spoiler.blocker.apps.WhatsappBlocker
-import spoiler.blocker.apps.YouTubeBlocker
+import spoiler.blocker.apps.Blockers
 import spoiler.blocker.util.log
 import spoiler.blocker.util.logE
 import spoiler.blocker.util.logI
@@ -66,9 +64,11 @@ class SpoilerBlockerService : AccessibilityService() {
         view
     }
 
-    private val redditBlocker by lazy { RedditBlocker(windowManager, overlayView) }
-    private val youTubeBlocker by lazy { YouTubeBlocker(windowManager, overlayView) }
-    private val whatsappBlocker by lazy { WhatsappBlocker(windowManager, overlayView) }
+    private val blockers by lazy {
+        Blockers.values().map {
+            it.create(windowManager, overlayView)
+        }
+    }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         logI { "onAccessibilityEvent() called with: event = [$event]" }
@@ -89,19 +89,12 @@ class SpoilerBlockerService : AccessibilityService() {
 
         overlayView.clearAllRect()
 
-        if ("reddit.news" in event.packageName) {
-            //Reddit app.
-            redditBlocker.checkAndBlock(rootInActiveWindow)
-            return
-        }
-        if ("com.google.android.youtube" in event.packageName) {
-            youTubeBlocker.checkAndBlock(rootInActiveWindow)
-            return
-        }
-        if ("com.whatsapp" in event.packageName) {
-            whatsappBlocker.checkAndBlock(rootInActiveWindow)
-            return
-        }
+        blockers.find { it.packageName in event.packageName }
+            ?.checkAndBlock(rootInActiveWindow)
+
+        val nodes = mutableListOf<String>()
+        printAllViews(rootInActiveWindow, nodes)
+        log { "nodes: $nodes" }
     }
 
     private var mDebugDepth = 0
@@ -133,18 +126,17 @@ class SpoilerBlockerService : AccessibilityService() {
     companion object {
         private var blockList = emptyList<String>()
 
-        fun AccessibilityNodeInfo.getBlockedTextIfFound(checkForContentDesc: Boolean = false): String? {
-            val text =
-                if (checkForContentDesc) contentDescription ?: return null
-                else text ?: return null
-            val result = blockList.find { text.contains(it, ignoreCase = true) }
+        fun AccessibilityNodeInfo.getBlockedTextIfFound(): String? {
+            val text = text?.toString().orEmpty()
+            val contentDescription = contentDescription?.toString().orEmpty()
+            val result = blockList.find {
+                text.contains(it, ignoreCase = true) ||
+                        contentDescription.contains(it, ignoreCase = true)
+            }
             if (result != null) {
                 logE { "shouldBlock() called true $text" }
             } else {
                 log { "shouldBlock() called false $text" }
-                if (checkForContentDesc.not()) {
-                    return getBlockedTextIfFound(checkForContentDesc = true)
-                }
             }
             return result
 //            return blockList.any { it in text }

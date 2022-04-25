@@ -14,12 +14,12 @@ import spoiler.blocker.util.children
 class YouTubeBlocker(
     windowManager: WindowManager,
     overlayView: OverlayView
-) : Blocker(windowManager, overlayView) {
+) : Blocker(windowManager, overlayView, "com.google.android.youtube") {
 
     private val rect = Rect()
     private val innerRect = Rect()
 
-    fun checkAndBlock(nodeInfo: AccessibilityNodeInfo?) {
+    override fun checkAndBlock(nodeInfo: AccessibilityNodeInfo?) {
         nodeInfo ?: return
 
         val recyclerView =
@@ -46,8 +46,7 @@ class YouTubeBlocker(
         recyclerView.children.forEach { childNode ->
             //child node 1st child content-desc
             childNode.blockIfNeeded(
-                childNode.children.firstOrNull() ?: return@forEach,
-                checkForContentDesc = true
+                childNode.children.firstOrNull() ?: return@forEach
             )
         }
     }

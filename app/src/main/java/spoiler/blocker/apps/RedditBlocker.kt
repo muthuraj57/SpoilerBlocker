@@ -16,9 +16,9 @@ import spoiler.blocker.util.logE
 class RedditBlocker(
     windowManager: WindowManager,
     overlayView: OverlayView
-) : Blocker(windowManager, overlayView) {
+) : Blocker(windowManager, overlayView, "reddit.news") {
 
-    fun checkAndBlock(nodeInfo: AccessibilityNodeInfo?) {
+    override fun checkAndBlock(nodeInfo: AccessibilityNodeInfo?) {
         nodeInfo ?: return
 
         val rect = Rect()

@@ -8,12 +8,12 @@ import spoiler.blocker.OverlayView
 /**
  * Created by Muthuraj on 26/04/22.
  */
-class WhatsappBlocker(
+class WhatsAppBlocker(
     windowManager: WindowManager,
     overlayView: OverlayView
-) : Blocker(windowManager, overlayView) {
+) : Blocker(windowManager, overlayView, "com.whatsapp") {
 
-    fun checkAndBlock(nodeInfo: AccessibilityNodeInfo?) {
+    override fun checkAndBlock(nodeInfo: AccessibilityNodeInfo?) {
         nodeInfo ?: return
 
         //Full screen text-status.

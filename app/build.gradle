@@ -49,6 +49,7 @@ dependencies {
     implementation(libs.material)
     implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
     implementation(libs.bundles.compose)
+    implementation(libs.lifecycle.viewmodel)
 
     implementation(libs.datastore)
 

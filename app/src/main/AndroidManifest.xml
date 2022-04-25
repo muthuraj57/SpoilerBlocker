@@ -24,7 +24,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".KeywordActivity" />
+        <activity android:name=".KeywordActivity" android:windowSoftInputMode="adjustResize" />
 
         <service
             android:name=".SpoilerBlockerService"

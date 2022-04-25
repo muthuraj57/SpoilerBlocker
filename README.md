@@ -3,6 +3,7 @@ Blocks text, image and videos from Reddit, Youtube, WhatsApp and Facebook Androi
 
 
 ### Steps
+* Download APK from [here](https://github.com/muthuraj57/SpoilerBlocker/releases/) and install it
 * Enable **Spoiler Blocker** app in accessibility services settings
 * Enter keywords that you want to block
 * Now when you open Reddit/YouTube/WhatsApp/Facebook app, posts/videos/status/post that contains the keywords will be blocked and a red overlay will be shown

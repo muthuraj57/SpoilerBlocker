@@ -6,7 +6,7 @@ compileSdk = "32"
 kotlin = "1.6.10"
 kotlinCoroutines = "1.6.0"
 androidBuildTools = "7.1.2"
-wire = "4.0.0-alpha.19"
+wire = "4.3.0"
 
 androidx-core = "1.7.0"
 androidx-appcompat = "1.4.1"
@@ -21,10 +21,6 @@ accompanist = "0.21.3-beta"
 datastore = "1.0.0"
 
 [libraries]
-plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-plugin-android = { module = "com.android.tools.build:gradle", version.ref = "androidBuildTools" }
-plugin-wire = { module = "com.squareup.wire:wire-gradle-plugin", version.ref = "wire" }
-
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
@@ -46,3 +42,8 @@ datastore = { module = "androidx.datastore:datastore", version.ref = "datastore"
 compose = ["androidx-composeUi", "androidx-composeUiTooling", "androidx-composeFoundation", "androidx-composeMaterial", "androidx-composeMaterialIconsCore", "activity-compose"]
 
 kotlin-coroutines = ["kotlin-coroutines-core", "kotlin-coroutines-android"]
+
+[plugins]
+kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+android = { id = "com.android.application", version.ref = "androidBuildTools" }
+wire = { id = "com.squareup.wire", version.ref = "wire" }

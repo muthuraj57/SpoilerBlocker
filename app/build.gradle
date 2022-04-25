@@ -1,7 +1,7 @@
 plugins {
-    id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
-    id 'com.squareup.wire'
+    alias(libs.plugins.android)
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.wire)
 }
 
 android {

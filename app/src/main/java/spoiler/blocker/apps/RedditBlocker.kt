@@ -1,10 +1,10 @@
 /* $Id$ */
-package spoiler.blocker
+package spoiler.blocker.apps
 
 import android.graphics.Rect
-import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityNodeInfo
+import spoiler.blocker.OverlayView
 import spoiler.blocker.SpoilerBlockerService.Companion.getBlockedTextIfFound
 import spoiler.blocker.util.children
 import spoiler.blocker.util.log
@@ -14,14 +14,13 @@ import spoiler.blocker.util.logE
  * Created by Muthuraj on 25/03/22.
  */
 class RedditBlocker(
-    private val windowManager: WindowManager,
-    private val overlayView: OverlayView
-) {
+    windowManager: WindowManager,
+    overlayView: OverlayView
+) : Blocker(windowManager, overlayView) {
+
     fun checkAndBlock(nodeInfo: AccessibilityNodeInfo?) {
         nodeInfo ?: return
 
-        val dy =
-            windowManager.currentWindowMetrics.windowInsets.getInsets(WindowInsets.Type.statusBars()).top
         val rect = Rect()
         var blockedText: String? = null
         nodeInfo.children.forEachIndexed { index, childNode ->

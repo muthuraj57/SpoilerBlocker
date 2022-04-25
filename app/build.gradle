@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId "spoiler.blocker"
-        minSdk 21
+        minSdk 30
         targetSdk 31
         versionCode 1
         versionName "1.0"

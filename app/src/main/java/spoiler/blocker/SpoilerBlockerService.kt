@@ -12,6 +12,9 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import spoiler.blocker.apps.RedditBlocker
+import spoiler.blocker.apps.WhatsappBlocker
+import spoiler.blocker.apps.YouTubeBlocker
 import spoiler.blocker.util.log
 import spoiler.blocker.util.logE
 import spoiler.blocker.util.logI
@@ -65,6 +68,7 @@ class SpoilerBlockerService : AccessibilityService() {
 
     private val redditBlocker by lazy { RedditBlocker(windowManager, overlayView) }
     private val youTubeBlocker by lazy { YouTubeBlocker(windowManager, overlayView) }
+    private val whatsappBlocker by lazy { WhatsappBlocker(windowManager, overlayView) }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         logI { "onAccessibilityEvent() called with: event = [$event]" }
@@ -92,6 +96,10 @@ class SpoilerBlockerService : AccessibilityService() {
         }
         if ("com.google.android.youtube" in event.packageName) {
             youTubeBlocker.checkAndBlock(rootInActiveWindow)
+            return
+        }
+        if ("com.whatsapp" in event.packageName) {
+            whatsappBlocker.checkAndBlock(rootInActiveWindow)
             return
         }
     }

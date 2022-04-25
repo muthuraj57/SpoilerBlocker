@@ -1,10 +1,10 @@
 /* $Id$ */
-package spoiler.blocker
+package spoiler.blocker.apps
 
 import android.graphics.Rect
-import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityNodeInfo
+import spoiler.blocker.OverlayView
 import spoiler.blocker.SpoilerBlockerService.Companion.getBlockedTextIfFound
 import spoiler.blocker.util.children
 
@@ -12,18 +12,15 @@ import spoiler.blocker.util.children
  * Created by Muthuraj on 25/03/22.
  */
 class YouTubeBlocker(
-    private val windowManager: WindowManager,
-    private val overlayView: OverlayView
-) {
+    windowManager: WindowManager,
+    overlayView: OverlayView
+) : Blocker(windowManager, overlayView) {
 
     private val rect = Rect()
     private val innerRect = Rect()
 
     fun checkAndBlock(nodeInfo: AccessibilityNodeInfo?) {
         nodeInfo ?: return
-
-        val dy =
-            windowManager.currentWindowMetrics.windowInsets.getInsets(WindowInsets.Type.statusBars()).top
 
         val recyclerView =
             nodeInfo.findAccessibilityNodeInfosByViewId("com.google.android.youtube:id/results")
@@ -32,7 +29,7 @@ class YouTubeBlocker(
         val subtitles =
             nodeInfo.findAccessibilityNodeInfosByViewId("com.google.android.youtube:id/subtitle_window_identifier")
                 .orEmpty()
-        subtitles.forEach {subtitle->
+        subtitles.forEach { subtitle ->
             val blockedText = subtitle.getBlockedTextIfFound()
             if (blockedText != null) {
                 subtitle.getBoundsInScreen(rect)
@@ -46,15 +43,12 @@ class YouTubeBlocker(
             }
         }
 
-        recyclerView.children.forEach {  childNode ->
+        recyclerView.children.forEach { childNode ->
             //child node 1st child content-desc
-            val blockedText =
-                childNode.children.firstOrNull()?.getBlockedTextIfFound(checkForContentDesc = true)
-            if (blockedText != null) {
-                childNode.getBoundsInScreen(rect)
-                rect.offset(0, -dy)
-                overlayView.addRect(rect, blockedText)
-            }
+            childNode.blockIfNeeded(
+                childNode.children.firstOrNull() ?: return@forEach,
+                checkForContentDesc = true
+            )
         }
     }
 }

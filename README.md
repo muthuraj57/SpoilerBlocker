@@ -8,4 +8,4 @@ Blocks text, image and videos from Reddit, Youtube, WhatsApp and Facebook Androi
 * Now when you open Reddit/YouTube/WhatsApp/Facebook app, posts/videos/status/post that contains the keywords will be blocked and a red overlay will be shown
 
 ## Watch the demo video
-[![Watch the video](https://img.youtube.com/vi/q1MPFRlJkmQ/maxresdefault.jpg)](https://youtube.com/shorts/q1MPFRlJkmQ)
+[![Watch the video](https://img.youtube.com/vi/_9qjSyRCuVk/maxresdefault.jpg)](https://youtu.be/_9qjSyRCuVk)

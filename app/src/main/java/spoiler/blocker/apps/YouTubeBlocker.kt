@@ -22,6 +22,7 @@ class YouTubeBlocker(
     override fun checkAndBlock(nodeInfo: AccessibilityNodeInfo?) {
         nodeInfo ?: return
 
+        //This has the video list.
         val recyclerView =
             nodeInfo.findAccessibilityNodeInfosByViewId("com.google.android.youtube:id/results")
                 ?.firstOrNull() ?: return
@@ -30,6 +31,9 @@ class YouTubeBlocker(
             nodeInfo.findAccessibilityNodeInfosByViewId("com.google.android.youtube:id/subtitle_window_identifier")
                 .orEmpty()
         subtitles.forEach { subtitle ->
+            //Subtitles are actually shown above the recyclerView. So get the bounds of the subtitle
+            //view and check which video view resides in that bounds and block that view.
+
             val blockedText = subtitle.getBlockedTextIfFound()
             if (blockedText != null) {
                 subtitle.getBoundsInScreen(rect)
@@ -43,6 +47,8 @@ class YouTubeBlocker(
             }
         }
 
+        //Video list block check - the video title will be available as first children's content
+        //description.
         recyclerView.children.forEach { childNode ->
             //child node 1st child content-desc
             childNode.blockIfNeeded(

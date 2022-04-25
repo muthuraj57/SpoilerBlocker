@@ -23,6 +23,8 @@ class WhatsAppBlocker(
                 childNode.blockIfNeeded()
             }
 
+        //Full screen image/video status with caption. We are checking blocked words in caption and
+        //blocking whole status if blocked word is found.
         nodeInfo.findAccessibilityNodeInfosByViewId("com.whatsapp:id/status_container")
             .orEmpty()
             .forEach { statusContainer ->

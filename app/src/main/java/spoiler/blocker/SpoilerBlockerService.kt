@@ -91,36 +91,10 @@ class SpoilerBlockerService : AccessibilityService() {
 
         blockers.find { it.packageName in event.packageName }
             ?.checkAndBlock(rootInActiveWindow)
-
-        val nodes = mutableListOf<String>()
-        printAllViews(rootInActiveWindow, nodes)
-        log { "nodes: $nodes" }
-    }
-
-    private var mDebugDepth = 0
-    private fun printAllViews(mNodeInfo: AccessibilityNodeInfo?, list: MutableList<String>) {
-        if (mNodeInfo == null) return
-        var log = ""
-        for (i in 0 until mDebugDepth) {
-            log += "."
-        }
-        if (mNodeInfo.text?.toString()?.startsWith("father passed away in") == true) {
-            logE { "found subtitle.." }
-        }
-        log += "(" + mNodeInfo.text + " <-- " +
-                mNodeInfo.viewIdResourceName + ")"
-        list += log
-        log { log }
-        if (mNodeInfo.childCount < 1) return
-        mDebugDepth++
-        for (i in 0 until mNodeInfo.childCount) {
-            printAllViews(mNodeInfo.getChild(i), list)
-        }
-        mDebugDepth--
     }
 
     override fun onInterrupt() {
-        logE { "onInterrupt() called" }
+        log { "onInterrupt() called" }
     }
 
     companion object {
@@ -129,17 +103,10 @@ class SpoilerBlockerService : AccessibilityService() {
         fun AccessibilityNodeInfo.getBlockedTextIfFound(): String? {
             val text = text?.toString().orEmpty()
             val contentDescription = contentDescription?.toString().orEmpty()
-            val result = blockList.find {
+            return blockList.find {
                 text.contains(it, ignoreCase = true) ||
                         contentDescription.contains(it, ignoreCase = true)
             }
-            if (result != null) {
-                logE { "shouldBlock() called true $text" }
-            } else {
-                log { "shouldBlock() called false $text" }
-            }
-            return result
-//            return blockList.any { it in text }
         }
     }
 }

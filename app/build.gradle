@@ -47,7 +47,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation(libs.bundles.compose)
     implementation(libs.lifecycle.viewmodel)
 

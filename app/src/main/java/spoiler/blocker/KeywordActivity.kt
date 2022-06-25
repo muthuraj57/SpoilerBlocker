@@ -20,14 +20,17 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import spoiler.blocker.ui.SpoilerBlockerTheme
 import spoiler.blocker.util.SystemBarColors
 
 /**
@@ -55,55 +59,70 @@ class KeywordActivity : AppCompatActivity() {
         val dataStore = keywordsDataStore
         val keywordsFlow = dataStore.data.map { it.keywords }
         setContent {
-            SystemBarColors()
-
-            Scaffold {
-                val keywords = keywordsFlow.collectAsState(initial = emptyList()).value
-                val scope = rememberCoroutineScope()
-                Column(
-                    modifier = Modifier
-                        .padding(it)
-                        .systemBarsPadding()
-                        .padding(16.dp)
-                ) {
-                    val scrollState = rememberLazyListState()
-
-                    KeywordInputBox(keywords, addKeyword = { keyword ->
-                        dataStore.updateData { keywords ->
-                            keywords.copy(keywords.keywords + keyword)
-                        }
-                        scrollState.animateScrollToItem(keywords.size - 1)
-                    })
-
-                    LazyColumn(
-                        state = scrollState,
+            SpoilerBlockerTheme {
+                SystemBarColors()
+                Scaffold {
+                    val keywords = keywordsFlow.collectAsState(initial = emptyList()).value
+                    val scope = rememberCoroutineScope()
+                    Column(
                         modifier = Modifier
-                            .imePadding()
-                            .fillMaxWidth()
+                            .padding(it)
+                            .systemBarsPadding()
+                            .padding(16.dp)
                     ) {
-                        itemsIndexed(keywords) { index, text ->
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = "${index + 1}) $text", fontSize = 16.sp)
-                                IconButton(onClick = {
-                                    scope.launch {
-                                        dataStore.updateData { keywords ->
-                                            val newList = keywords.keywords.toMutableList()
-                                                .apply { removeAt(index) }
-                                                .toList()
-                                            keywords.copy(newList)
+                        val scrollState = rememberLazyListState()
+
+                        KeywordInputBox(keywords, addKeyword = { keyword ->
+                            dataStore.updateData { keywords ->
+                                keywords.copy(keywords.keywords + keyword)
+                            }
+                            if (keywords.isNotEmpty()) {
+                                scrollState.animateScrollToItem(keywords.size - 1)
+                            }
+                        })
+                        if (keywords.isEmpty()) {
+                            CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.disabled) {
+                                Text(
+                                    modifier = Modifier
+                                        .padding(top = 20.dp)
+                                        .align(Alignment.CenterHorizontally),
+                                    text = "No keywords added yet.",
+                                )
+                            }
+                        } else {
+                            LazyColumn(
+                                state = scrollState,
+                                modifier = Modifier
+                                    .imePadding()
+                                    .fillMaxWidth()
+                            ) {
+                                itemsIndexed(keywords) { index, text ->
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(text = "${index + 1}) $text", fontSize = 16.sp)
+                                        IconButton(onClick = {
+                                            scope.launch {
+                                                dataStore.updateData { keywords ->
+                                                    val newList = keywords.keywords.toMutableList()
+                                                        .apply { removeAt(index) }
+                                                        .toList()
+                                                    keywords.copy(newList)
+                                                }
+                                            }
+                                        }) {
+                                            Icon(
+                                                imageVector = Icons.Default.Delete,
+                                                contentDescription = "Delete"
+                                            )
                                         }
                                     }
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "Delete"
-                                    )
                                 }
                             }
                         }
+
                     }
                 }
             }
+
         }
     }
 
@@ -115,14 +134,16 @@ class KeywordActivity : AppCompatActivity() {
             mutableStateOf(null)
         }
         Column(Modifier.padding(bottom = 16.dp)) {
-            Row {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 var text by remember { mutableStateOf("") }
                 var showProgress by remember {
                     mutableStateOf(false)
                 }
                 val scope = rememberCoroutineScope()
 
-                OutlinedTextField(value = text, onValueChange = {
+                OutlinedTextField(label = {
+                    Text(text = "Keyword")
+                }, value = text, onValueChange = {
                     errorMessage = null
                     text = it
                 })

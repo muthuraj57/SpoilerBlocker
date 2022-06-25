@@ -28,6 +28,7 @@ class SpoilerBlockerService : AccessibilityService() {
 
     override fun onCreate() {
         logE { "onCreate() called" }
+        isEnabled = true
         scope.cancel()
         scope = CoroutineScope(SupervisorJob())
         keywordsDataStore.data
@@ -39,6 +40,7 @@ class SpoilerBlockerService : AccessibilityService() {
 
     override fun onDestroy() {
         logE { "onDestroy() called" }
+        isEnabled = false
         scope.cancel()
         super.onDestroy()
     }
@@ -98,6 +100,7 @@ class SpoilerBlockerService : AccessibilityService() {
     }
 
     companion object {
+        var isEnabled = false
         private var blockList = emptyList<String>()
 
         fun AccessibilityNodeInfo.getBlockedTextIfFound(): String? {
